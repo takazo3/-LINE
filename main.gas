@@ -1,0 +1,491 @@
+var channel_access_token = ""
+
+
+// ユーザからのリクエスト判定(友達追加またはメッセージ)
+function doPost(e) {
+  var events = JSON.parse(e.postData.contents).events;
+  events.forEach(function(event) {
+    if (event.type == "message") {
+      sendMessage(event);
+    }
+    if (event.type == "follow") {
+      sendFollowMessage(event);
+    }
+  });
+}
+function sendFollowMessage(e) {
+  var followMessage = setFollowMessage(e);
+  var postData = {
+    "replyToken": e.replyToken,
+    "messages": followMessage
+  };
+  var options = {
+    "method": "post",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + channel_access_token
+    },
+    "payload": JSON.stringify(postData)
+  };
+  UrlFetchApp.fetch("https://api.line.me/v2/bot/message/reply", options);
+}
+ 
+// 友達追加された際に返すメッセージ
+function setFollowMessage(e) {
+  var message = [{
+    "type": "text",
+    "text": "友達追加ありがとうございます！"
+  }];
+  return (message)
+}
+function sendMessage(e) {
+  var message = setMessage(e);
+  var postData = {
+    "replyToken": e.replyToken,
+    "messages": message
+  };
+  var options = {
+    "method": "post",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + channel_access_token
+    },
+    "payload": JSON.stringify(postData)
+  };
+  UrlFetchApp.fetch("https://api.line.me/v2/bot/message/reply", options);
+}
+ 
+// メッセージが送られてきた際に返す返信の条件分岐
+function setMessage(e) {
+  switch (e.message.text) {
+    case "おしえて！":
+      var message = [
+        {
+       'type':'flex',　//ここの宣言が必須
+        'altText':' どんなきもちかな？',
+        //↓このcontentsの部分にSimulatorのJSONをコピー
+        'contents':{
+  "type": "bubble",
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "どんなきもちかな？",
+        "weight": "bold",
+        "size": "xl"
+      },
+      {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "lg",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "baseline",
+            "spacing": "sm",
+            "contents": [
+              {
+                "type": "text",
+                "text": "いちばん近いきもちはどれ？",
+                "wrap": true,
+                "color": "#666666",
+                "size": "sm",
+                "flex": 5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+      {
+        "type": "button",
+        "style": "link",
+        "height": "sm",
+        "action": {
+          "type": "message",
+          "label": "かなしい😢",
+          "text": "かなしい😢"
+        }
+      },
+      {
+        "type": "button",
+        "style": "link",
+        "height": "sm",
+        "action": {
+          "type": "message",
+          "label": "こわい😨",
+          "text": "こわい😨"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "いやだ😣",
+          "text": "いやだ😣"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "おこってる😤",
+          "text": "おこってる😤"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "つかれた😖",
+          "text": "つかれた😖"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "つらい😭",
+          "text": "つらい😭"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "わからない😓",
+          "text": "わからない😓"
+        }
+      },
+      {
+        "type": "spacer",
+        "size": "sm"
+      }
+    ],
+    "flex": 0
+  }
+}
+        },
+              {
+        "type": "text",
+        "text": "みやすいように、メニューをとじてね！"
+      }
+    ];
+    
+      return(message)
+      break;
+ 
+  case "おしまい！":
+    var message = [
+      {
+        "type": "text",
+        "text": "よくがんばったね👍"
+      }
+    ];
+    return(message)
+    break;
+  case "ひとやすみしたい！":
+  case"わからない😓":
+    var message = [
+      {
+        "type": "text",
+        "text": "ゆっくりとおちついてみよう💤"
+      }
+    ];
+    return(message)
+    break;
+  case "Tips":
+    var message = [
+      {
+        "type": "text",
+        "text": "とても繊細なので、口調や雰囲気でパニックになってしまいます。\n声を荒げたりせかしたりすると余計にわからなくなってしまいます。いったん落ち着くと話してくれる場合も多いので、\n落ち着くまで焦らずにゆっくりと時間をかけてあげてください💕	"
+      }
+    ];
+    return(message)
+    break;    
+
+    default:
+    var message = [
+      {
+        "type": "text",
+        "text": "そうなんだね😉\nまわりのひとにつたえてみてね！\nこれをみせてもOKだよ！"
+      }
+    ];
+    return(message)
+    
+
+  case  "かなしい😢":
+  case "こわい😨":
+  case "いやだ😣":
+  case "おこってる😤":
+  case "つかれた😖":
+  case "つらい😭":
+        var message = [
+        {
+        "type": "text",
+        "text": "そうなんだね😉"
+        },
+        {
+       'type':'flex',//ここの宣言が必須
+        'altText':'どんなひとやことがかんけいしてる？',
+        //↓このcontentsの部分にSimulatorのJSONをコピー
+        'contents':{
+            "type": "bubble",
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "なに・だれにかな？",
+        "weight": "bold",
+        "size": "xl"
+      },
+      {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "lg",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "baseline",
+            "spacing": "sm",
+            "contents": [
+              {
+                "type": "text",
+                "text": "どれにかんけいしてる？",
+                "wrap": true,
+                "color": "#666666",
+                "size": "sm",
+                "flex": 5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+      {
+        "type": "button",
+        "style": "link",
+        "height": "sm",
+        "action": {
+          "type": "message",
+          "label": "自分（じぶん）のこと",
+          "text": "自分自身"
+        }
+      },
+      {
+        "type": "button",
+        "style": "link",
+        "height": "sm",
+        "action": {
+          "type": "message",
+          "label": "友達（ともだち）",
+          "text": "友達"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "先生（せんせい）",
+          "text": "先生"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "親（パパやママ）",
+          "text": "親"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "学校（がっこう）",
+          "text": "がっこう"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "身体（からだ）のどこか",
+          "text": "身体のこと"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "かんけいしてることはない",
+          "text": "かんけいしていることはない"
+        }
+      },
+      {
+        "type": "spacer",
+        "size": "sm"
+      }
+    ],
+    "flex": 0
+  }
+}
+        }
+    ];
+    return(message)
+    case "自分自身":
+    case "友達":
+    case "先生":
+    case "親":
+    case "学校":
+    case "身体のこと":
+    case "かんけいしていることはない":
+        var message = [
+        {
+        "type": "text",
+        "text": "そうなんだね😉"
+        },
+        {
+       'type':'flex',//ここの宣言が必須
+        'altText':'どんなひとやことがかんけいしてる？',
+        //↓このcontentsの部分にSimulatorのJSONをコピー
+        'contents':{
+            "type": "bubble",
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "contents": [
+      {
+        "type": "text",
+        "text": "どうしたのかな？",
+        "weight": "bold",
+        "size": "xl"
+      },
+      {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "lg",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "baseline",
+            "spacing": "sm",
+            "contents": [
+              {
+                "type": "text",
+                "text": "どうしたのかな？",
+                "wrap": true,
+                "color": "#666666",
+                "size": "sm",
+                "flex": 5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "sm",
+    "contents": [
+      {
+        "type": "button",
+        "style": "link",
+        "height": "sm",
+        "action": {
+          "type": "message",
+          "label": "いやなことをいわれた・された",
+          "text": "嫌なことを言われた・された"
+        }
+      },
+      {
+        "type": "button",
+        "style": "link",
+        "height": "sm",
+        "action": {
+          "type": "message",
+          "label": "やりたくない・いきたくない",
+          "text": "やりたくない・いきたくない"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "うるさい",
+          "text": "うるさい"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "むずかしい",
+          "text": "むずかしい"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "ぐあいがわるい・どこかがいたい",
+          "text": "具合が悪い・どこか痛い"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "やすみたい",
+          "text": "休みたい"
+        }
+      },
+      {
+        "type": "button",
+        "action": {
+          "type": "message",
+          "label": "かんけいしてることはない",
+          "text": "やりたい・ほしい"
+        }
+      },
+      {
+        "type": "text",
+        "text": "おわったら、\"おしまい\"をおそう！",
+        "position": "relative",
+        "align": "center",
+        "color": "#f5587b"
+      },      
+      {
+        "type": "spacer",
+        "size": "sm"
+      }
+    ],
+    "flex": 0
+  }
+}      }
+    ];
+    return(message)
+    break;  
+  }
+}
